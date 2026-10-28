@@ -77,12 +77,7 @@ function OnboardingRoute() {
 function OnboardingPage() {
 	const messages = useAgentMessages();
 	const { chatId, isRunning, queueOrSendMessage } = useAgentContext();
-	const {
-		complete: onboardingComplete,
-		projectIsMissing,
-		progress,
-		warehouseJob,
-	} = useOnboardingCompletion(chatId);
+	const { complete: onboardingComplete, projectIsMissing, progress, warehouseJob } = useOnboardingCompletion(chatId);
 	const { isOrgAdmin } = usePermissions();
 	const { data: session } = useSession();
 	const queryClient = useQueryClient();
@@ -143,6 +138,14 @@ function OnboardingPage() {
 	const [deployDialogStyle, setDeployDialogStyle] = useState<React.CSSProperties>();
 	const [importDialogStyle, setImportDialogStyle] = useState<React.CSSProperties>();
 	const [latestPlaintextDeployKey, setLatestPlaintextDeployKey] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (createdProject) {
+			queryClient
+				.invalidateQueries({ queryKey: trpc.project.isCurrentSetupComplete.queryKey() })
+				.catch(console.error);
+		}
+	}, [createdProject, queryClient]);
 
 	useEffect(() => {
 		if (warehouseReady) {
